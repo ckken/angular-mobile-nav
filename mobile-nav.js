@@ -174,7 +174,7 @@ angular.module('ajoslin.mobile-navigate')
     nav.onRouteSuccess = null;
     //Add a default onroutesuccess for the very first page
     function defaultRouteSuccess($event, next, last) {
-      nav.current && navHistory.push(nav.current);
+      nav.current && navHistory.push([nav.current,next]);
       nav.next = new Page($location.path());
       nav.next.transitionOnce('none');
       navigate(nav.next);
@@ -185,6 +185,8 @@ angular.module('ajoslin.mobile-navigate')
       if (!next.$$route || !next.$$route.redirectTo) {
         (nav.onRouteSuccess || defaultRouteSuccess)($event, next, last);
       }
+        //Make route history accessible
+		$rootScope.$broadcast('$pageNaved',navHistory,next, last);
     });
 
     /*
@@ -201,7 +203,7 @@ angular.module('ajoslin.mobile-navigate')
       $location.path(path);
       //Wait for successful route change before actually doing stuff
       nav.onRouteSuccess = function($event, next, last) {
-        nav.current && navHistory.push(nav.current);
+        nav.current && navHistory.push([nav.current,next]);
         nav.next = new Page(path, transition || (next.$$route && next.$$route.transition), isReverse);
         navigate(nav.next, nav.current, false);
       };
@@ -210,9 +212,12 @@ angular.module('ajoslin.mobile-navigate')
     nav.eraseHistory = function() {
       navHistory.length = 0;
     };
+    nav.getHistory=function(){
+        return navHistory;
+    };
     nav.back = function() {
       if (navHistory.length > 0) {
-        var previous = navHistory[navHistory.length-1];
+        var previous = navHistory[navHistory.length-1][0];
         $location.path(previous.path());
         nav.onRouteSuccess = function() {
           navHistory.pop();
