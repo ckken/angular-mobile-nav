@@ -1,5 +1,8 @@
 angular-mobile-nav
 ==================
+我用的angular导航控件，在原有的ajoslin上进行了两处改造：
+1.修正后退的动画方向逻辑错误;
+2.可以提取出导航历史的数组;
 
 [Demo](http://ajoslin.github.com/angular-mobile-nav) (Only will work in webkit browsers)
 
