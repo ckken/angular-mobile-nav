@@ -2,6 +2,9 @@
  * angular-mobile-nav by Andy Joslin
  * http://github.com/ajoslin/angular-mobile-nav
  * @license MIT License http://goo.gl/Z8Nlo
+ *
+ * add navigateing list route-info support by regou
+ * Adjust back Action strategy by regou
  */
 
 angular.module('ajoslin.mobile-navigate', [])
@@ -161,8 +164,8 @@ angular.module('ajoslin.mobile-navigate')
       };
     }
     
-    function navigate(destination, source, isBack) {
-      $rootScope.$broadcast('$pageTransitionStart', destination, source, isBack);
+            function navigate(destination, source, isReverse,isBack) {
+                $rootScope.$broadcast('$pageTransitionStart', destination, source, isReverse,isBack);
       nav.current = nav.next;
     }
 
@@ -185,7 +188,7 @@ angular.module('ajoslin.mobile-navigate')
       if (!next.$$route || !next.$$route.redirectTo) {
         (nav.onRouteSuccess || defaultRouteSuccess)($event, next, last);
       }
-        //Make route history accessible
+        //Make route history accessible by regou
 		$rootScope.$broadcast('$pageNaved',navHistory,next, last);
     });
 
@@ -209,24 +212,30 @@ angular.module('ajoslin.mobile-navigate')
       };
     };
     //Sometimes you want to erase history
-    nav.eraseHistory = function() {
-      navHistory.length = 0;
+      nav.eraseHistory = function(str,routeObj) {
+        navHistory=[];
+        if(routeObj){
+             navHistory.push([str,routeObj])
+        }
+        return navHistory;
     };
     nav.getHistory=function(){
         return navHistory;
     };
     nav.back = function() {
-      if (navHistory.length > 0) {
-        var previous = navHistory[navHistory.length-1][0];
-        $location.path(previous.path());
-        nav.onRouteSuccess = function() {
-          navHistory.pop();
-          nav.next = previous;
-          navigate(nav.next, nav.current, true);
-        };
-        return true;
-      }
-      return false;
+      try{
+		  if (navHistory.length > 0) {
+			var previous = navHistory[navHistory.length-1][0];
+			$location.path(previous.path());
+			nav.onRouteSuccess = function() {
+			  navHistory.pop();
+			  nav.next = previous;
+			  navigate(nav.next, nav.current, true,true);
+			};
+			return true;
+		  }
+		  return false;
+      }catch(e){return false}
     };
 
     return nav;
@@ -263,16 +272,18 @@ function($rootScope, $compile, $controller, $route, $change, $q) {
 
 
     var currentTrans;
-    scope.$on('$pageTransitionStart', function ($event, dest, source, reverse) {
+                scope.$on('$pageTransitionStart', function ($event, dest, source, reverse,isBack) {
       function changePage() {
         var current = $route.current && $route.current.$$route || {};
+        if(isBack){reverse=true;}
         var transition = reverse ? source.transition() : dest.transition();
 
         insertPage(dest);
 
         //If the page is marked as reverse, reverse the direction
+        //But,if it's a nav.back Action, keep reverse==true  regou@2013.9.9
         if (dest.reverse() || current.reverse) {
-          reverse = !reverse;
+            if(!isBack){reverse = !reverse;}
         }
 
         function doTransition() {
