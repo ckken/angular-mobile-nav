@@ -3,10 +3,9 @@ angular-mobile-nav
 我用的angular导航控件，在原有的ajoslin上进行了两处改造：
 1.修正后退的动画方向逻辑错误;
 2.可以提取出导航历史的数组;
+3.修正android 4.1.x  可能发生的动画结束事件不触发问题
 
 [Demo](http://ajoslin.github.com/angular-mobile-nav) (Only will work in webkit browsers)
-
-[Download](http://ajoslin.github.com/angular-mobile-nav/mobile-nav.zip) (.zip)
 
 A simple navigation service and directive which will transition between partials.  Intended for mobile applications on Android/iOS.
 
